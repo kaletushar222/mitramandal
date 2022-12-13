@@ -76,7 +76,7 @@ class ComponentRegistrationForm extends React.Component {
     }
 
     handleSubmit = (event) =>{
-        const { invoice } = this.state
+        const { formObject } = this.state
         event.preventDefault()
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
@@ -86,7 +86,7 @@ class ComponentRegistrationForm extends React.Component {
         }
         else{
             console.log("success")
-            this.props.submitInvoice(invoice)
+            this.props.submitGroupRegistration(formObject)
         }
         this.setState({validated : true})
     }
@@ -168,19 +168,19 @@ class ComponentRegistrationForm extends React.Component {
                                                 <Col>
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Member Name</Form.Label>
-                                                        <Form.Control value={ member.name } type="text" placeholder="Enter Member Name" name="name"  onChange={(event)=>this.handleMemberUpdate(event, index)} />
+                                                        <Form.Control value={ member.name } type="text" placeholder="Enter Member Name" name="name"  onChange={(event)=>this.handleMemberUpdate(event, index)} required />
                                                     </Form.Group>
                                                 </Col>
                                                 <Col>
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Member Contact</Form.Label>
-                                                        <Form.Control value={ member.contact } type="text" placeholder="Enter Member Contact" name="contact"  onChange={(event)=>this.handleMemberUpdate(event, index)} />
+                                                        <Form.Control value={ member.contact } type="text" placeholder="Enter Member Contact" name="contact"  onChange={(event)=>this.handleMemberUpdate(event, index)} required />
                                                     </Form.Group>
                                                 </Col>
                                                 <Col>
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Member Role</Form.Label>
-                                                        <Form.Control value={ member.role } type="text" placeholder="Enter Member Role" name="role"  onChange={(event)=>this.handleMemberUpdate(event, index)} />
+                                                        <Form.Control value={ member.role } type="text" placeholder="Enter Member Role" name="role"  onChange={(event)=>this.handleMemberUpdate(event, index)} required />
                                                     </Form.Group>
                                                 </Col>
                                                 <Button style={{marginTop: "30px", marginBottom: "30px"}} variant="danger" onClick={ ()=>this.deleteMember(index) }><i className="bi bi-trash"></i></Button>

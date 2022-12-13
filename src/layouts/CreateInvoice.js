@@ -19,7 +19,6 @@ class CreateInvoice extends React.Component {
         const that = this
         createInvoice(invoiceObj)
             .then((response) => {
-                console.log(response)
                 that.setState({
                     invoiceSubmitted: true,
                     showToast: true,
