@@ -17,11 +17,11 @@ class DocTracker extends React.Component {
 
     //lifecycle methods
     componentDidMount(){
-        this.getDocTracker()
+        this.getDocTrackerData()
     };
     
     //api calls
-    getDocTracker = () =>{
+    getDocTrackerData = () =>{
         const that = this
         getDocTracker()
             .then((response) => {
