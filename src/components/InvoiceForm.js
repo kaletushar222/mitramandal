@@ -79,7 +79,6 @@ class ComponentInvoiceForm extends React.Component {
         }
         else{
             console.log("success")
-            invoice.invoiceNo = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000; // use doc tracker
             this.props.submitInvoice(invoice)
         }
         this.setState({validated : true})
@@ -93,8 +92,8 @@ class ComponentInvoiceForm extends React.Component {
                         <Row>
                             <Col>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Bill number</Form.Label>
-                                    <Form.Control value={ invoice.invoiceNo } type="text" placeholder="Bill number" style={{ textTransform : "uppercase" }} name="invoiceNo"  onChange={this.handleInvoicUpdate}/>
+                                    <Form.Label>Amount</Form.Label>
+                                    <Form.Control value={ invoice.amount } type="number" placeholder="Amount" min="0" name="amount"  onChange={this.handleInvoicUpdate} required/>
                                 </Form.Group>
                             </Col>
                             <Col>
@@ -104,9 +103,10 @@ class ComponentInvoiceForm extends React.Component {
                                         selected={ invoice.invoiceDate }
                                         className="form-control"
                                         customInput={
-                                            <Form.Control type="text" placeholder="Bill number" id="validationCustom01" />
+                                            <Form.Control type="text" id="validationCustom01" />
                                         }
                                         onChange={this.handleDateChange}
+                                        disabled
                                     />
                                 </Form.Group>
                             </Col>
@@ -117,10 +117,6 @@ class ComponentInvoiceForm extends React.Component {
                             <Form.Control.Feedback type="invalid">
                                 Please enter a contributers name.
                             </Form.Control.Feedback>
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Amount</Form.Label>
-                            <Form.Control value={ invoice.amount } type="number" placeholder="Amount" min="0" name="amount"  onChange={this.handleInvoicUpdate} required/>
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="formBasicCheckbox">
                             <Form.Check type="checkbox" label="Pending" checked={ invoice.isPending } name="isPending"  onChange={this.handlePendingCheckBox}/>

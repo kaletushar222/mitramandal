@@ -62,13 +62,15 @@ class Expense extends React.Component {
     }
 
     getInvoices = () =>{
-        const that = this
+        const that = this;
+        console.log("getinvoice --------------------------------------------------------- : ",that);
         getInvoice()
             .then((response) => {
+                console.log("response ---------------------", response.data);
                 that.props.setInvoices(response.data);
             })    
             .catch((err) => {
-                console.log(err)
+                console.log(err);
                 that.setState({
                     showToast: true,
                     toastMessage: "Error in fetching data"
@@ -78,6 +80,28 @@ class Expense extends React.Component {
 
     render() {
         const { expenses, invoices } = this.props;
+        //getting invoices as undefined how to get results in invoices
+        console.log("invoices : ", invoices);
+        console.log("expenses : ", expenses);
+        if (invoices === undefined || invoices.length === 0){
+            console.log("invoices is undefined or empty");
+            return (
+                <div className='custom-container income-layout'>
+                    <h4>Loading...</h4>
+                </div>
+            );
+        }
+        if (expenses === undefined || expenses.length === 0){
+            console.log("expenses is undefined or empty");
+            return (
+                <div className='custom-container income-layout'>
+                    <h4>Loading...</h4>
+                </div>
+            );
+        }
+        
+
+
         let amountSpent = 0;
         let amountRemaining = 0;
         console.log(expenses);

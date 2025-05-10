@@ -78,6 +78,20 @@ class ComponentExpenseForm extends React.Component {
         }
         this.setState({validated : true})
     }
+    // HOW TO make datepicker disabled
+    // <DatePicker
+    //     selected={ expense.expenseDate }
+
+    //     className="form-control"
+    //     customInput={
+    //         <Form.Control type="text" disabled id="validationCustom01" />
+    //     }
+    //     onChange={this.handleDateChange}
+    //     disabled
+    // />   
+    //     <Form.Control type="text" disabled id="validationCustom01" />
+    //     <Form.Control type="text" disabled id="validationCustom01" />        
+    //     <Form.Control type="text" disabled id="validationCustom01" />
     render() {
         const { expense, validated } = this.state
         return (
@@ -101,6 +115,7 @@ class ComponentExpenseForm extends React.Component {
                                             <Form.Control type="text" id="validationCustom01" />
                                         }
                                         onChange={this.handleDateChange}
+                                        disabled
                                     />
                                 </Form.Group>
                             </Col>

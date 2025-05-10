@@ -3,6 +3,7 @@ import React from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 import {updateDocTracker} from '../../api/DocTrackerApi';
 import { getDocTracker } from '../../api/DocTrackerApi';
+import { Toast, ToastContainer } from 'react-bootstrap';
 
 class DocTracker extends React.Component {
 
@@ -11,7 +12,9 @@ class DocTracker extends React.Component {
         this.state = {
             validated: false,
             docTrackerObj: {},
-            docTrackerUpdated: false
+            docTrackerUpdated: false,
+            showToast: false,
+            toastMessage: ''
         }
     };
 
@@ -26,7 +29,7 @@ class DocTracker extends React.Component {
         getDocTracker()
             .then((response) => {
                 that.setState({
-                    docTrackerObj: response[0]
+                    docTrackerObj: response.data
                 })
             })    
             .catch((err) => {
@@ -39,26 +42,36 @@ class DocTracker extends React.Component {
     };
 
     handleDocTrackerUpdate = (e) => {
-        console.log("e ---> ", e);
+        const { docTrackerObj } = this.state;
+        console.log("e : ", e);
+        docTrackerObj[e.target.name] = e.target.value;
+        console.log("docTrackerObj : ", docTrackerObj);
+        this.setState({
+            docTrackerObj: {...docTrackerObj}
+        });
+
     };
     
     handleSubmit = (e) => {
+        e.preventDefault();
         const { docTrackerObj } = this.state;
         console.log("e : ", e);
-        const that = this
+        const that = this;
+
         updateDocTracker(docTrackerObj)
             .then((response) => {
                 console.log(response);
+                debugger;
                 that.setState({
                     docTrackerUpdated: true,
                     showToast: true,
                     toastMessage: "Doc tracker updated"
                 })
-                setTimeout(function(){
-                    that.setState({
-                        docTrackerUpdated: false
-                    })
-                }, 2000);
+                // setTimeout(function(){
+                //     that.setState({
+                //         docTrackerUpdated: false
+                //     })
+                // }, 2000);
                 
             })    
             .catch((err) => {
@@ -71,7 +84,8 @@ class DocTracker extends React.Component {
     }
 
     render(){
-        const { docTrackerObj, validated } = this.state;
+        const { docTrackerObj, validated, showToast, docTrackerUpdated, toastMessage } = this.state;
+        debugger;
         return (
             <div>
                     <br/><br/><br/><br/><br/><br/>
@@ -86,11 +100,11 @@ class DocTracker extends React.Component {
                                     </Form.Group>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Invoice No</Form.Label>
-                                        <Form.Control value={ docTrackerObj.expenseNo } type="number" placeholder="Invoice No" name="invoiceno" onChange={this.handleDocTrackerUpdate}/>
+                                        <Form.Control value={ docTrackerObj.invoiceNo } type="number" placeholder="Invoice No" name="invoiceNo" onChange={this.handleDocTrackerUpdate}/>
                                     </Form.Group>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Expense No</Form.Label>
-                                        <Form.Control value={ docTrackerObj.expenseNo } type="number" placeholder="Expense No" name="expenseno" onChange={this.handleDocTrackerUpdate}/>
+                                        <Form.Control value={ docTrackerObj.expenseNo } type="number" placeholder="Expense No" name="expenseNo" onChange={this.handleDocTrackerUpdate}/>
                                     </Form.Group>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Year</Form.Label>
@@ -102,6 +116,11 @@ class DocTracker extends React.Component {
                                     </Button>
                                     <br/>
                                 </Form>
+                                <ToastContainer className="p-3" position="top-center">
+                                    <Toast bg={ docTrackerUpdated ? "success" : "danger" } onClose={() => this.setState({showToast: false})} show={showToast} delay={1800} autohide >
+                                        <Toast.Body>{toastMessage}</Toast.Body>
+                                    </Toast>
+                                </ToastContainer>
                             </div>
                         </Col>
                         <Col></Col>

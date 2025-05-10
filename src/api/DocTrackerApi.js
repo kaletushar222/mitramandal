@@ -18,6 +18,6 @@ export function getDocTracker(params) {
 }
 
 //put
-export function updateDocTracker(id, updateObject) {
-    return init().put(`/${id}`, updateObject);
+export function updateDocTracker(updateObject) {
+    return init().put(`/`, updateObject);
 }
