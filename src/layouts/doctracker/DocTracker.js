@@ -5,6 +5,15 @@ import {updateDocTracker} from '../../api/DocTrackerApi';
 import { getDocTracker } from '../../api/DocTrackerApi';
 import { Toast, ToastContainer } from 'react-bootstrap';
 
+function makeInitial(name){
+    if(!name) return '';
+    const noSpaces = name.replace(/\s+/g,'');
+    const consonants = noSpaces.replace(/[aeiouAEIOU]/g,'').toUpperCase();
+    if(consonants.length >= 4) return consonants.substring(0,4);
+    const fallback = noSpaces.toUpperCase();
+    return (consonants + fallback).substring(0,4);
+}
+
 class DocTracker extends React.Component {
 
     constructor(props) {
@@ -26,21 +35,33 @@ class DocTracker extends React.Component {
     //api calls
     getDocTrackerData = () =>{
         const that = this
-        getDocTracker()
-            .then((response) => {
-                that.setState({
-                    docTrackerObj: response.data
+        try{
+            const userJson = localStorage.getItem('mitramandal_user');
+            const user = userJson ? JSON.parse(userJson) : null;
+            getDocTracker()
+                .then((response) => {
+                    const data = response.data || {};
+                    // compute default initials from group name if not present
+                    if((!data.initial || data.initial === '') && user && user.groupName){
+                        const name = user.groupName || '';
+                        const initials = makeInitial(name);
+                        data.initial = initials;
+                    }
+                    that.setState({ docTrackerObj: data })
                 })
-            })    
-            .catch((err) => {
-                console.log(err)
-                that.setState({
-                    showToast: true,
-                    toastMessage: "Error in fetching data"
-                })
-            });
+                .catch((err) => {
+                    // fallback: build default initial from group name
+                    console.log(err)
+                    const user = JSON.parse(localStorage.getItem('mitramandal_user') || 'null');
+                    const data = { invoiceNo: 1, expenseNo: 1, year: new Date().getFullYear() };
+                    if(user && user.groupName){ data.initial = makeInitial(user.groupName); }
+                    that.setState({ docTrackerObj: data, showToast: true, toastMessage: 'Using local doc tracker default' })
+                });
+        }
+        catch(err){
+            console.log(err);
+        }
     };
-
     handleDocTrackerUpdate = (e) => {
         const { docTrackerObj } = this.state;
         console.log("e : ", e);
@@ -61,7 +82,6 @@ class DocTracker extends React.Component {
         updateDocTracker(docTrackerObj)
             .then((response) => {
                 console.log(response);
-                debugger;
                 that.setState({
                     docTrackerUpdated: true,
                     showToast: true,
@@ -85,7 +105,6 @@ class DocTracker extends React.Component {
 
     render(){
         const { docTrackerObj, validated, showToast, docTrackerUpdated, toastMessage } = this.state;
-        debugger;
         return (
             <div>
                     <br/><br/><br/><br/><br/><br/>

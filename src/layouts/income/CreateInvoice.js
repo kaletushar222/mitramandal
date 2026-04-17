@@ -2,6 +2,7 @@ import React from 'react';
 import { Toast, ToastContainer } from 'react-bootstrap';
 import {createInvoice} from '../../api/InvoiceApi';
 import ComponentInvoiceForm from '../../components/InvoiceForm';
+import utils from '../../utils/utils';
 
 class CreateInvoice extends React.Component {
     constructor(props){
@@ -17,27 +18,48 @@ class CreateInvoice extends React.Component {
     }
     submitInvoice =(invoiceObj) =>{
         const that = this
-        createInvoice(invoiceObj)
-            .then((response) => {
-                that.setState({
-                    invoiceSubmitted: true,
-                    showToast: true,
-                    toastMessage: "Invoice Created"
+        try{
+            const userJson = localStorage.getItem('mitramandal_user');
+            const user = userJson ? JSON.parse(userJson) : null;
+            // augment invoice with group info and metadata
+            invoiceObj.id = invoiceObj.id || ('inv_' + new Date().getTime());
+            invoiceObj.groupId = user ? user.groupId : null;
+            invoiceObj.groupName = user ? user.groupName : null;
+            invoiceObj.createdBy = user ? user.contact : null;
+            invoiceObj.status = invoiceObj.status || 'ACTIVE';
+            // save to localStorage per-group
+            const key = 'mitramandal_invoices_' + (invoiceObj.groupId || 'global');
+            const stored = localStorage.getItem(key);
+            const arr = stored ? JSON.parse(stored) : [];
+            // normalize and dedupe before storing
+            const merged = utils.normalizeRecords([...(arr||[]), invoiceObj], { groupId: invoiceObj.groupId });
+            localStorage.setItem(key, JSON.stringify(merged));
+
+            // try server call but don't block on it
+            createInvoice(invoiceObj)
+                .then((response) => {
+                    console.log('invoice saved to server')
                 })
-                setTimeout(function(){
-                    that.setState({
-                        invoiceSubmitted: false
-                    })
-                }, 2000);
-                
-            })    
-            .catch((err) => {
-                console.log(err)
-                that.setState({
-                    showToast: true,
-                    toastMessage: "Failed to create invoice"
+                .catch((err)=>{
+                    console.log('server createInvoice failed', err)
                 })
-            });
+
+            // notify app that invoices for this group updated so views can refresh
+            try{ window.dispatchEvent(new CustomEvent('mitramandal_invoices_updated', { detail: { groupId: invoiceObj.groupId } })); } catch(e){}
+
+            that.setState({
+                invoiceSubmitted: true,
+                showToast: true,
+                toastMessage: "Invoice Created"
+            })
+            setTimeout(function(){
+                that.setState({ invoiceSubmitted: false })
+            }, 2000);
+        }
+        catch(err){
+            console.log(err)
+            that.setState({ showToast: true, toastMessage: 'Failed to create invoice' })
+        }
     }
     render() {
         const { invoiceSubmitted, showToast, toastMessage } = this.state

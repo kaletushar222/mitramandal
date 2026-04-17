@@ -12,6 +12,15 @@ class Expense extends React.Component {
     componentDidMount(){
         this.getInvoices();
         this.getExpenses();
+        try{ window.addEventListener('mitramandal_expenses_updated', this.handleExpensesUpdated); } catch(e){}
+    }
+
+    componentWillUnmount(){
+        try{ window.removeEventListener('mitramandal_expenses_updated', this.handleExpensesUpdated); } catch(e){}
+    }
+
+    handleExpensesUpdated = (e) => {
+        this.getExpenses();
     }
     
 
@@ -19,18 +28,32 @@ class Expense extends React.Component {
     getExpenses = () =>{
         const that = this
         console.log("that : ",that);
-        getExpense()
-            .then((response) => {
-                console.log("response", response.data);
-                that.props.setExpenses(response.data);
-            })    
-            .catch((err) => {
-                console.log(err);
-                that.setState({
-                    showToast: true,
-                    toastMessage: "Error in fetching data"
-                });
-            });
+        try{
+            const userJson = localStorage.getItem('mitramandal_user');
+            const user = userJson ? JSON.parse(userJson) : null;
+            const key = 'mitramandal_expenses_' + (user && user.groupId ? user.groupId : 'global');
+            const stored = localStorage.getItem(key);
+            const arr = stored ? JSON.parse(stored) : [];
+            const normalizedLocal = utils.normalizeRecords(arr, { groupId: user ? user.groupId : null, groupName: user ? user.groupName : null });
+            that.props.setExpenses(normalizedLocal);
+            if(user && user.groupId){
+                getExpense({ groupId: user.groupId })
+                    .then((response)=>{
+                        if(Array.isArray(response.data)){
+                            const normalizedServer = utils.normalizeRecords(response.data, { groupId: user.groupId, groupName: user.groupName });
+                            if(normalizedServer.length){
+                                that.props.setExpenses(normalizedServer);
+                                try{ localStorage.setItem(key, JSON.stringify(normalizedServer)); } catch(e){}
+                            }
+                        }
+                    })
+                    .catch((err)=> console.log('getExpense server failed', err));
+            }
+        }
+        catch(err){
+            console.log(err);
+            that.setState({ showToast: true, toastMessage: 'Error in fetching data' });
+        }
     }
 
     deleteExpense = (expense) =>{
@@ -63,19 +86,34 @@ class Expense extends React.Component {
 
     getInvoices = () =>{
         const that = this;
-        console.log("getinvoice --------------------------------------------------------- : ",that);
-        getInvoice()
-            .then((response) => {
-                console.log("response ---------------------", response.data);
-                that.props.setInvoices(response.data);
-            })    
-            .catch((err) => {
-                console.log(err);
-                that.setState({
-                    showToast: true,
-                    toastMessage: "Error in fetching data"
-                })
-            });
+        try{
+            const userJson = localStorage.getItem('mitramandal_user');
+            const user = userJson ? JSON.parse(userJson) : null;
+            const key = 'mitramandal_invoices_' + (user && user.groupId ? user.groupId : 'global');
+            const stored = localStorage.getItem(key);
+            const arr = stored ? JSON.parse(stored) : [];
+            const normalizedLocal = utils.normalizeRecords(arr, { groupId: user ? user.groupId : null, groupName: user ? user.groupName : null });
+            that.props.setInvoices(normalizedLocal);
+            if(user && user.groupId){
+                getInvoice({ groupId: user.groupId })
+                    .then((response)=>{
+                        if(Array.isArray(response.data)){
+                            const normalizedServer = utils.normalizeRecords(response.data, { groupId: user.groupId, groupName: user.groupName });
+                            if(normalizedServer.length){
+                                that.props.setInvoices(normalizedServer);
+                                try{ localStorage.setItem(key, JSON.stringify(normalizedServer)); } catch(e){}
+                            }
+                        }
+                    })
+                    .catch((err)=>{
+                        console.log(err);
+                        that.setState({ showToast: true, toastMessage: 'Error in fetching data' })
+                    });
+            }
+        }
+        catch(err){
+            console.log(err);
+        }
     }
 
     render() {
@@ -107,8 +145,11 @@ class Expense extends React.Component {
         console.log(expenses);
 
         expenses.forEach((exp)=>{
-            if(exp.status === "ACTIVE"){
-                amountSpent = amountSpent + exp.amount;
+            if(!exp) return;
+            const status = exp.status || 'ACTIVE';
+            if(status === "ACTIVE"){
+                const amt = Number(exp.amount) || 0;
+                amountSpent = amountSpent + amt;
             }
         })
 
@@ -117,10 +158,12 @@ class Expense extends React.Component {
         if (invoices && invoices.length > 0 ){
             invoices.forEach((inv)=>{
                 if(inv.status === "ACTIVE"){
-                    if(!inv.isPending){
-                        amountReceived = amountReceived + inv.amount;
+                        const amt = Number(inv.amount) || 0;
+                        const isPending = (inv.isPending === true) || (String(inv.isPending) === 'true');
+                        if(!isPending){
+                            amountReceived = amountReceived + amt;
+                        }
                     }
-                }
             })
         }
 

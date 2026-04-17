@@ -1,37 +1,18 @@
-import * as axios from "axios";
-// import { getCookie } from "./utils";
+import { createApiClient } from './client';
 
-function init(){
-    //this.api_token = getCookie("ACCESS_TOKEN");
-
-    let headers = {
-        Accept: "application/json",
-    };
-
-    // if (this.api_token) {
-    //     headers.Authorization = `Bearer ${this.api_token}`;
-    // }
-
-    let client = axios.create({
-        baseURL: process.env.REACT_APP_API_ENDPOINT+ "group/",
-        timeout: 31000,
-        headers: headers,
-    });
-    return client;
-}
+const client = createApiClient('group/');
 
 //get
 export function getGroup(params) {
-    return init().get("/", { params: params });
+    return client.get('/', { params });
 }
 
 //post
 export function registerGroup(data){
-    console.log(data)
-    return init().post("/create", data);
+    return client.post('/create', data);
 };
 
 //put
 export function updateGroup(id, updateObject) {
-    return init().put(`/${id}`, updateObject);
+    return client.put(`/${id}`, updateObject);
 }
